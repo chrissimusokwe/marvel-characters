@@ -18,7 +18,7 @@ class DataProcessor:
     """
 
     def __init__(self, pandas_df: pd.DataFrame, config: ProjectConfig, spark: SparkSession) -> None:
-        self.df = pandas_df  # Store the DataFrame as self.df
+        self.df = pandas_df.copy()  # Make an explicit copy to avoid SettingWithCopyWarning
         self.config = config  # Store the configuration
         self.spark = spark
 
@@ -51,13 +51,13 @@ class DataProcessor:
         self.df = self.df[self.df["Identity"].isin(["Public", "Secret", "Unknown"])]
 
         # Gender
-        self.df["Gender"] = self.df["Gender"].fillna("Unknown")
-        self.df["Gender"] = self.df["Gender"].where(self.df["Gender"].isin(["Male", "Female"]), other="Other")
+        self.df.loc[:, "Gender"] = self.df["Gender"].fillna("Unknown")
+        self.df.loc[:, "Gender"] = self.df["Gender"].where(self.df["Gender"].isin(["Male", "Female"]), other="Other")
 
         # Marital status
         self.df.rename(columns={"Marital Status": "Marital_Status"}, inplace=True)
-        self.df["Marital_Status"] = self.df["Marital_Status"].fillna("Unknown")
-        self.df["Marital_Status"] = self.df["Marital_Status"].replace("Widow", "Widowed")
+        self.df.loc[:, "Marital_Status"] = self.df["Marital_Status"].fillna("Unknown")
+        self.df.loc[:, "Marital_Status"] = self.df["Marital_Status"].replace("Widow", "Widowed")
         self.df = self.df[self.df["Marital_Status"].isin(["Single", "Married", "Widowed", "Engaged", "Unknown"])]
 
         # Magic
